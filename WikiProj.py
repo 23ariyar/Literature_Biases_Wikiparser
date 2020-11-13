@@ -50,7 +50,7 @@ def remove_tag_id(tag: str) -> str:
     return ''.join([i for i in tag if i in '1234567890'])
 
 
-@func_set_timeout(5.0)
+#@func_set_timeout(4.0)
 def parseBZ2Page(file: bz2.BZ2File): #check if id already in db
     '''
     Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
@@ -105,8 +105,11 @@ def main(file, db):
     for line in file: 
         if b'<page>' in line: #</page> indicates new Wikipedia page
 
-            try: parsed_data = parseBZ2Page(file)
-            except FunctionTimedOut: continue
+            #try: 
+            parsed_data = parseBZ2Page(file)
+            #except FunctionTimedOut: 
+            #    print ("Something gone wrong LOL!")
+            #    continue
 
             if parsed_data:
                 (categories, id, title) = parsed_data
