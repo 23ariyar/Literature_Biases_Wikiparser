@@ -7,7 +7,7 @@ from typing import Tuple, List
 
 
 
-pathWikiBZ2 = 'C:\\Users\\16507\\Downloads\\enwiki-20201101-pages-articles-multistream5.xml.bz2' #.xml.bz2 file path
+pathWikiBZ2 = 'C:\\Users\\16507\\Downloads\\enwiki-20201020-pages-articles-multistream.xml.bz2' #.xml.bz2 file path
 pathWikiDB = 'C:\\Users\\16507\\Documents\\Projects\\WikipediaProject\\Literature-Biases---Wikipedia\\wiki.db'
 FTR = ["novel"] #filter - these words must be in categories to append to the db - make sure the words are in lowercase
 NON_FTR = ["births", "musical", "television series", "films"] #filter - these words must NOT be categories to append to the db - make sure the words are in lowercase
@@ -132,5 +132,5 @@ def main(file, db):
 
 
 if __name__ == '__main__':
-    database = WikiDB("wiki.db")
+    database = WikiDB(pathWikiDB)
     print(main(bz2_file, database))
