@@ -8,7 +8,7 @@ from typing import Tuple, List
 
 
 pathWikiBZ2 = 'C:\\Users\\16507\\Downloads\\enwiki-20201101-pages-articles-multistream5.xml.bz2' #.xml.bz2 file path
-#pathWikiDB = 'C:\\Users\\16507\\Downloads\\wiki.db'
+pathWikiDB = 'C:\\Users\\16507\\Documents\\Projects\\WikipediaProject\\Literature-Biases---Wikipedia\\wiki.db'
 FTR = ["novel"] #filter - these words must be in categories to append to the db - make sure the words are in lowercase
 NON_FTR = ["births", "musical", "television series", "films"] #filter - these words must NOT be categories to append to the db - make sure the words are in lowercase
 start_time = time.time()
