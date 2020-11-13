@@ -1,6 +1,6 @@
 import bz2
 import os
-from func_timeout import func_set_timeout
+from func_timeout import *
 from WikiDBBZ2 import WikiDB
 import time
 from typing import Tuple, List
@@ -14,6 +14,7 @@ NON_FTR = ["births", "musical", "television series", "films"] #filter - these wo
 start_time = time.time()
 
 bz2_file = bz2.BZ2File(pathWikiBZ2) 
+
 
 
 def passes_filter(categories: List[str]) -> bool:
@@ -49,6 +50,7 @@ def remove_tag_id(tag: str) -> str:
     return ''.join([i for i in tag if i in '1234567890'])
 
 
+@func_set_timeout(5.0)
 def parseBZ2Page(file: bz2.BZ2File): #check if id already in db
     '''
     Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
@@ -103,7 +105,9 @@ def main(file, db):
     for line in file: 
         if b'<page>' in line: #</page> indicates new Wikipedia page
 
-            parsed_data = parseBZ2Page(file)
+            try: parsed_data = parseBZ2Page(file)
+            except FunctionTimedOut: continue
+
             if parsed_data:
                 (categories, id, title) = parsed_data
                 pc += 1
