@@ -43,29 +43,27 @@ def hms_string(sec_elapsed: int) -> str:
     s = sec_elapsed % 60
     return "{}:{:>02}:{:>05.2f}".format(h, m, s)
 
-def parseBZ2Page(file: bz2.BZ2File, page_line): #check if id already in db
+def parseBZ2Page(file: bz2.BZ2File, page_line: bytes): #check if id already in db
     '''
     Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
-    returns the ID and categories of the Wikipedia page
+    returns the categories, id, and title through a tuple
     :param file: bz2.BZ2File
+    :param page_line: bytes
     '''
     categories = []
     
     decompressed_file_as_str = page_line.decode("utf-8")
 
-    for line in file:
+    for line in file: 
         decoded = line.decode("utf-8")
         decompressed_file_as_str += decoded
 
         if b'[[Category:' in line:
             categories.append(decoded[11:-3]) 
 
-        elif b'</page>' in line:
+        elif b'</page>' in line: #Once reading a </page> tag, exit. 
             break
     
-    
-
-    #print(decompressed_file_as_str)
     root = ET.fromstring(decompressed_file_as_str)
     
     if root.find('ns').text != '0' or 'redirect title' in decompressed_file_as_str: return None
@@ -73,9 +71,13 @@ def parseBZ2Page(file: bz2.BZ2File, page_line): #check if id already in db
     title = root.find('title').text
     id = root.find('id').text
 
-    #print('NS:', ns, '\n', 'Title:', title, '\n', 'ID:', id)
+    '''
+    Debugging statements
+    print(decompressed_file_as_str)
+    print('NS:', ns, '\n', 'Title:', title, '\n', 'ID:', id)
+    raise Exception('Let me just take a peek!')
+    '''
 
-    #raise Exception('Let me just take a peek!')
     return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
 
 def main(file, db):
@@ -83,21 +85,21 @@ def main(file, db):
     Parses a .xml.bz2 file and returns a dictionary {ID, [Categories]} of articles that pass the filter FTR 
     :param file: bz2.BZFile object
     '''
-    pc = 0
-    ac = 0
+    pc = 0 #page count
+    ac = 0 #added count
+
     for line in file: 
         if b'<page>' in line: #</page> indicates new Wikipedia page
 
             parsed_data = parseBZ2Page(file, line)
 
-
-            if parsed_data:
+            if parsed_data: #parsed_data returns None when the page should be excluded
                 (categories, id, title) = parsed_data
                 pc += 1
             else:
                 continue
 
-            if passes_filter(categories): 
+            if passes_filter(categories): #if categories passes filter, add to database
                 db.insert(id, title, repr(categories))
                 ac += 1
 
