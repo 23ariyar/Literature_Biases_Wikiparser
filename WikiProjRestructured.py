@@ -82,13 +82,8 @@ def parseBZ2Page(file: bz2.BZ2File, page_line: bytes):
     print('NS:', ns, '\n', 'Title:', title, '\n', 'ID:', id)
     raise Exception('Let me just take a peek!')
     '''
-    '''
-    if id == '50376':
-        print(decompressed_file_as_str)
-        raise Exception('Let me just take a peek!')
-    '''
+
     return (categories, id, title)
-    #return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
 
 def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
     '''
