@@ -1,9 +1,12 @@
 import bz2
 import os
-from func_timeout import *
-from WikiDBBZ2 import WikiDB
+import xml.etree.ElementTree as ET
+
 import time
 from typing import Tuple, List
+
+from WikiDBBZ2 import WikiDB
+
 
 
 
@@ -22,11 +25,9 @@ def passes_filter(categories: List[str]) -> bool:
     Returns a bool depending on if the categories passes the filter
     :param categories: a list of the categories
     '''
-
     crepr = repr(categories)
 
     if any([i in crepr for i in NON_FTR]): return False
-
     return all([i in crepr for i in FTR]) 
 
 
@@ -42,57 +43,39 @@ def hms_string(sec_elapsed: int) -> str:
     s = sec_elapsed % 60
     return "{}:{:>02}:{:>05.2f}".format(h, m, s)
 
-
-def remove_tag_id(tag: str) -> str:
-    '''
-    Removes tag on id line
-    '''
-    return ''.join([i for i in tag if i in '1234567890'])
-
-
-@func_set_timeout(5.0)
-def parseBZ2Page(file: bz2.BZ2File): #check if id already in db
+def parseBZ2Page(file: bz2.BZ2File, page_line): #check if id already in db
     '''
     Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
     returns the ID and categories of the Wikipedia page
     :param file: bz2.BZ2File
     '''
     categories = []
-    in_categories = False
-    found_id = False
-    found_ns = False
-    found_title = False
-
-    #decompressed_file = b''
     
-
+    decompressed_file_as_str = page_line.decode("utf-8")
 
     for line in file:
-        #decompressed_file += line
-        if not found_id and b'<id>' in line: #More than one b'<id>' in Wiki page, but first one will be the official ID
-            id = remove_tag_id(line.decode("utf-8"))
-            found_id = True
-        
-        if not found_ns and b'<ns>' in line: #If not article page, skip. Article pages have a ns (namespace) of 0
-            if b'<ns>0</ns>' not in line:
-                return False
+        decoded = line.decode("utf-8")
+        decompressed_file_as_str += decoded
 
-        if not found_title and b'<title>' in line: #Parses for the title
-            title = line[11:-9]
+        if b'[[Category:' in line:
+            categories.append(decoded[11:-3]) 
 
-        if not in_categories: #If not in the category section yet, check to see if you have gotten there
-            if b'[[Category:' in line: 
-                in_categories = True
-                try: categories.append(line.decode("utf-8")[11:-3]) #For some reason, there are lines that can't be decoded
-                except UnicodeDecodeError: print(line)
-        elif b'[[Category:' not in line: #Once in categories section, check to see if you have exited. If yes, exit.
+        elif b'</page>' in line:
             break
-        else:
-            try: categories.append(line.decode("utf-8")[11:-3])
-            except UnicodeDecodeError: print(line)
     
-    #print(decompressed_file)
-    file.seek(-1, 1) #offsets back one (for loop reads an extra non-b'[[Category:' line)
+    
+
+    #print(decompressed_file_as_str)
+    root = ET.fromstring(decompressed_file_as_str)
+    
+    if root.find('ns').text != '0' or 'redirect title' in decompressed_file_as_str: return None
+
+    title = root.find('title').text
+    id = root.find('id').text
+
+    #print('NS:', ns, '\n', 'Title:', title, '\n', 'ID:', id)
+
+    #raise Exception('Let me just take a peek!')
     return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
 
 def main(file, db):
@@ -105,8 +88,8 @@ def main(file, db):
     for line in file: 
         if b'<page>' in line: #</page> indicates new Wikipedia page
 
-            try: parsed_data = parseBZ2Page(file)
-            except FunctionTimedOut: continue
+            parsed_data = parseBZ2Page(file, line)
+
 
             if parsed_data:
                 (categories, id, title) = parsed_data
