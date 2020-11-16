@@ -39,6 +39,15 @@ def hms_string(sec_elapsed: int) -> str:
     s = sec_elapsed % 60
     return "{}:{:>02}:{:>05.2f}".format(h, m, s)
 
+def remove_category_tags(line: str) -> str:
+    '''
+    Assumes line param is a [[Category: ]] line and removes the tags
+    :param line: decoded b'[[Category: ]] line
+    '''
+    start_tag = line.find('[[')
+    end_tag = line.find(']]')
+    return line[start_tag+11:end_tag]
+
 def parseBZ2Page(file: bz2.BZ2File, page_line: bytes): 
     '''
     Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
@@ -55,7 +64,7 @@ def parseBZ2Page(file: bz2.BZ2File, page_line: bytes):
         decompressed_file_as_str += decoded
 
         if b'[[Category:' in line:
-            categories.append(decoded[11:-3]) 
+            categories.append(remove_category_tags(decoded)) 
 
         elif b'</page>' in line: #Once reading a </page> tag, exit. 
             break
@@ -73,8 +82,13 @@ def parseBZ2Page(file: bz2.BZ2File, page_line: bytes):
     print('NS:', ns, '\n', 'Title:', title, '\n', 'ID:', id)
     raise Exception('Let me just take a peek!')
     '''
-
-    return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
+    '''
+    if id == '50376':
+        print(decompressed_file_as_str)
+        raise Exception('Let me just take a peek!')
+    '''
+    return (categories, id, title)
+    #return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
 
 def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
     '''
