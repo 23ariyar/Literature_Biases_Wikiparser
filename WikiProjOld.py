@@ -95,7 +95,7 @@ def parseBZ2Page(file: bz2.BZ2File): #check if id already in db
     file.seek(-1, 1) #offsets back one (for loop reads an extra non-b'[[Category:' line)
     return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
 
-def main(file, db):
+def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
     '''
     Parses a .xml.bz2 file and returns a dictionary {ID, [Categories]} of articles that pass the filter FTR 
     :param file: bz2.BZFile object

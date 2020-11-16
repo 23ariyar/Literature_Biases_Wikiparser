@@ -8,16 +8,14 @@ from typing import Tuple, List
 from WikiDBBZ2 import WikiDB
 
 
-
-
 pathWikiBZ2 = 'C:\\Users\\16507\\Downloads\\enwiki-20201020-pages-articles-multistream.xml.bz2' #.xml.bz2 file path
 pathWikiDB = 'C:\\Users\\16507\\Documents\\Projects\\WikipediaProject\\Literature-Biases---Wikipedia\\wiki.db'
+
 FTR = ["novel"] #filter - these words must be in categories to append to the db - make sure the words are in lowercase
 NON_FTR = ["births", "musical", "television series", "films"] #filter - these words must NOT be categories to append to the db - make sure the words are in lowercase
+
 start_time = time.time()
-
 bz2_file = bz2.BZ2File(pathWikiBZ2) 
-
 
 
 def passes_filter(categories: List[str]) -> bool:
@@ -30,8 +28,6 @@ def passes_filter(categories: List[str]) -> bool:
     if any([i in crepr for i in NON_FTR]): return False
     return all([i in crepr for i in FTR]) 
 
-
-
 def hms_string(sec_elapsed: int) -> str:
     """
     Gets time in Hour:Minutes:Seconds
@@ -43,7 +39,7 @@ def hms_string(sec_elapsed: int) -> str:
     s = sec_elapsed % 60
     return "{}:{:>02}:{:>05.2f}".format(h, m, s)
 
-def parseBZ2Page(file: bz2.BZ2File, page_line: bytes): #check if id already in db
+def parseBZ2Page(file: bz2.BZ2File, page_line: bytes): 
     '''
     Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
     returns the categories, id, and title through a tuple
@@ -80,7 +76,7 @@ def parseBZ2Page(file: bz2.BZ2File, page_line: bytes): #check if id already in d
 
     return ([i if (i[-7:] != ']]</tex') else i[:-7] for i in categories], id, title) #Removes the ]]<tex tag for some lines
 
-def main(file, db):
+def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
     '''
     Parses a .xml.bz2 file and returns a dictionary {ID, [Categories]} of articles that pass the filter FTR 
     :param file: bz2.BZFile object
