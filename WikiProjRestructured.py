@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import time
 from typing import Tuple, List
 
-from WikiDBBZ2 import WikiDB
+from WikiDBBZ2 import WikiDB, WikiDB_zlib
 
 
 pathWikiBZ2 = 'C:\\Users\\16507\\Downloads\\enwiki-20201020-pages-articles-multistream.xml.bz2' #.xml.bz2 file path
@@ -83,9 +83,9 @@ def parseBZ2Page(file: bz2.BZ2File, page_line: bytes):
     raise Exception('Let me just take a peek!')
     '''
 
-    return (categories, id, title)
+    return (categories, id, title, decompressed_file_as_str)
 
-def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
+def main(file: bz2.BZ2File, db: WikiDB, compresssion = False) -> WikiDB:
     '''
     Parses a .xml.bz2 file and returns a dictionary {ID, [Categories]} of articles that pass the filter FTR 
     :param file: bz2.BZFile object
@@ -99,14 +99,18 @@ def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
             parsed_data = parseBZ2Page(file, line)
 
             if parsed_data: #parsed_data returns None when the page should be excluded
-                (categories, id, title) = parsed_data
+                (categories, id, title, decompressed_article) = parsed_data
                 pc += 1
             else:
                 continue
 
             if passes_filter(categories): #if categories passes filter, add to database
-                db.insert(id, title, repr(categories))
                 ac += 1
+                if compression:
+                    db.insert(id, title, repr(categories), decompressed_article)
+                else:
+                    db.insert(id, title, repr(categories))
+
 
             if (pc % 150 == 0): #Print progress every 150 pages
                 elapsed_time = time.time() - start_time
@@ -126,5 +130,9 @@ def main(file: bz2.BZ2File, db: WikiDB) -> WikiDB:
 
 
 if __name__ == '__main__':
-    database = WikiDB(pathWikiDB)
-    print(main(bz2_file, database))
+    compression = bool(int(input('Do you want compressed articles to but part of the sqlite database (1 for yes, 0 for no)?: ')))
+    if compression:
+        database = WikiDB_zlib(pathWikiDB)
+    else:
+        database = WikiDB(pathWikiDB)
+    main(bz2_file, database, compression)
