@@ -1,6 +1,6 @@
 import bz2
 import os
-from func_timeout import *
+
 from WikiDBBZ2 import WikiDB
 import time
 from typing import Tuple, List

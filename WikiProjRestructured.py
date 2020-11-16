@@ -130,7 +130,7 @@ def main(file: bz2.BZ2File, db: WikiDB, compresssion = False) -> WikiDB:
 
 
 if __name__ == '__main__':
-    compression = bool(int(input('Do you want compressed articles to but part of the sqlite database (1 for yes, 0 for no)?: ')))
+    compression = bool(int(input('Do you want compressed articles to be a part of the sqlite database (1 for yes, 0 for no)?: ')))
     if compression:
         database = WikiDB_zlib(pathWikiDB)
     else:
