@@ -2,7 +2,7 @@ import sqlite3
 import zlib
 
 
-class WikiDB:
+class WikiDB(object):
     def __init__(self, filename: str):
         """
         This is the source wikidb to do more specific actions on
@@ -50,7 +50,7 @@ class WikiDB:
         """, (pageid, title, categories))
         self.maybe_commit()
 
-class WikiDB_zlib:
+class WikiDB_zlib(WikiDB):
     def __init__(self, filename: str):
         """
         This is the source wikidb to do more specific actions on
@@ -67,23 +67,6 @@ class WikiDB_zlib:
         self.conn.commit()
         self.cur = self.conn.cursor()
         self.pending = 0  # Counter for when to commit
-    def maybe_commit(self):
-        """
-        Called when row is inserted
-        Will check if self.pending is 100
-        If so commit current data
-        This improves time efficiency
-        """
-        self.pending += 1
-        if self.pending > 100:
-            self.commit()
-
-    def commit(self):
-        """
-        Called every 100 self.maybe_commits() and at the end of the parsing
-        """
-        self.conn.commit()
-        self.pending = 0
 
     def insert(self, pageid: int, title: str, categories: str, article: str):
         """
