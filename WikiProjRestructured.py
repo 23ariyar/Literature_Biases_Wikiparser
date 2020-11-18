@@ -50,9 +50,8 @@ def remove_category_tags(line: str) -> str:
 
 def parseBZ2Page(file: bz2.BZ2File, page_line: bytes): 
     '''
-    Given that the :param file:'s pointer is at one line past the beginning of the wiki page (line after </page>)
-    returns the categories, id, and title through a tuple
-    :param file: bz2.BZ2File
+    Given a file and the bytes of the first line (<page> line) returns the categories, id, title, and decompressed file as a stringthrough a tuple
+    :param file: bz2.BZ2File, actual file must be a .xml.bz2 file 
     :param page_line: bytes
     '''
     categories = []
