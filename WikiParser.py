@@ -134,4 +134,5 @@ if __name__ == '__main__':
         database = WikiDB_zlib(pathWikiDB)
     else:
         database = WikiDB(pathWikiDB)
+        
     main(bz2_file, database, compression)
